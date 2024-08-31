@@ -117,7 +117,7 @@ public class BrainfuckBasicCommandsTests
 
 	private string Run(string program, string input = "")
 	{
-		return Brainfuck.Run(program, input);
+		 return Brainfuck.Run(program, input);
 	}
 
 	private IVirtualMachine Vm(string program, int memorySize = 10)

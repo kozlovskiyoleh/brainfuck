@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 
 namespace func.brainfuck
@@ -8,29 +9,32 @@ namespace func.brainfuck
 	{
 		public string Instructions { get; }
 		public int InstructionPointer { get; set; }
-		public byte[] Memory { get; }
+		public byte[] Memory { get; } // напевно використовується для перетворення + в символ
 		public int MemoryPointer { get; set; }
-		public Dictionary<char, Action<IVirtualMachine>> register;
+		public Dictionary<char, Action<IVirtualMachine>> Register;
 
         public VirtualMachine(string program, int memorySize)
 		{
 			Memory = new byte[memorySize];
 			Instructions = program;
-			register = new Dictionary<char, Action<IVirtualMachine>>();
+			Register = new Dictionary<char, Action<IVirtualMachine>>();
 		}
 
         public void RegisterCommand(char symbol, Action<IVirtualMachine> execute)
 		{
-			register.Add(symbol, (IVirtualMachine) => execute(this));
+			Register.Add(symbol, (IVirtualMachine) => execute(this));
 		}
 
         public void Run()
 		{
-			foreach (var action in register.Values)
+			while (InstructionPointer < Instructions.Length && IsCommandInRegister())
 			{
-                action(this);
-                InstructionPointer++;
-            }
+				var command= Instructions[InstructionPointer];
+				Register[command](this);
+				InstructionPointer++;
+			}
 		}
+
+		private bool IsCommandInRegister() => Register.ContainsKey(Instructions[InstructionPointer]);
 	}
 }
