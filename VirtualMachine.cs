@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace func.brainfuck
 {
@@ -16,9 +17,22 @@ namespace func.brainfuck
         public VirtualMachine(string program, int memorySize)
 		{
 			Memory = new byte[memorySize];
-			Instructions = program;
+			Instructions = TransformToInstructions(program);
 			Register = new Dictionary<char, Action<IVirtualMachine>>();
+			Memory = TransformInstructionsToByte(program, memorySize);
 		}
+
+		private string TransformToInstructions(string program) => Regex.Replace(program, "[^0-9a-zA-Z,.<>+-]+", "");
+	
+        private byte[] TransformInstructionsToByte(string program, int memorySize)
+        {
+            byte[] tempMemory = new byte[memorySize];
+            for (int i = 0; i < program.Length; i++)
+			{
+				tempMemory[i] = Convert.ToByte(program[i]);
+            }
+            return tempMemory;
+        }
 
         public void RegisterCommand(char symbol, Action<IVirtualMachine> execute)
 		{
@@ -27,12 +41,19 @@ namespace func.brainfuck
 
         public void Run()
 		{
-			while (InstructionPointer < Instructions.Length && IsCommandInRegister())
+			while (InstructionPointer < Instructions.Length)
 			{
-				var command= Instructions[InstructionPointer];
-				Register[command](this);
-				InstructionPointer++;
-			}
+				if (IsCommandInRegister())
+				{
+                    var command = Instructions[InstructionPointer];
+                    Register[command](this);
+				}
+				else
+				{
+					MemoryPointer = Memory[InstructionPointer];
+				}
+                InstructionPointer++;
+            }
 		}
 
 		private bool IsCommandInRegister() => Register.ContainsKey(Instructions[InstructionPointer]);

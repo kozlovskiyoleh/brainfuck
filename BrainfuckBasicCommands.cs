@@ -12,7 +12,7 @@ namespace func.brainfuck
 		// при отримані Program через конструктор всі ASCII символи потрібно конвертувати в byte і зберегти в Memory
 		public static void RegisterTo(IVirtualMachine vm, Func<int> read, Action<char> write)
 		{
-			vm.RegisterCommand('.', b => { write.Invoke(Convert.ToChar(b.MemoryPointer)); });
+			vm.RegisterCommand('.', b => { write.Invoke(Convert.ToChar(b.MemoryPointer));});
 			vm.RegisterCommand('+', b => { vm.MemoryPointer++; });
 			vm.RegisterCommand('-', b => { vm.MemoryPointer--; });
 			vm.RegisterCommand(',', b => { b.MemoryPointer = read.Invoke(); });
