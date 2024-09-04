@@ -19,7 +19,7 @@ namespace func.brainfuck
 			Memory = new byte[memorySize];
 			Instructions = TransformToInstructions(program);
 			Register = new Dictionary<char, Action<IVirtualMachine>>();
-			Memory = TransformInstructionsToByte(program, memorySize);
+			//Memory = TransformInstructionsToByte(program, memorySize);
 		}
 
 		private string TransformToInstructions(string program) => Regex.Replace(program, "[^0-9a-zA-Z,.<>+-]+", "");
@@ -50,8 +50,9 @@ namespace func.brainfuck
 				}
 				else
 				{
-					MemoryPointer = Memory[InstructionPointer];
-				}
+                    MemoryPointer++;
+                    Memory[MemoryPointer] = Convert.ToByte(Instructions[InstructionPointer]);
+                }
                 InstructionPointer++;
             }
 		}
