@@ -17,9 +17,7 @@ namespace func.brainfuck
 			RegisterDecrement(vm);
 			RegisterNext(vm);
             RegisterPrevious(vm);
-            RegisterLettersAndNumbers('0', '9', vm);
-            RegisterLettersAndNumbers('A', 'Z', vm);
-			RegisterLettersAndNumbers('a', 'z', vm);
+            RegisterLettersAndNumbers(vm);
 		}
 
 		private static void RegisterWriteLine(IVirtualMachine vm, Action<char> write)
@@ -76,12 +74,13 @@ namespace func.brainfuck
             });
         }
 
-        private static void RegisterLettersAndNumbers(char startSymbol, char endSymbol, IVirtualMachine vm)
+        private static void RegisterLettersAndNumbers(IVirtualMachine vm)
 		{
-			for (char i = startSymbol; i <= endSymbol; i++)
+            const string symbolsRegisterTo = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+            for (int i = 0; i < symbolsRegisterTo.Length; i++)
 			{
-				char tempChar = i;
-                vm.RegisterCommand(i, b => { vm.Memory[vm.MemoryPointer] = Convert.ToByte(tempChar); });
+				char tempChar = symbolsRegisterTo[i];
+                vm.RegisterCommand(tempChar, b => { vm.Memory[vm.MemoryPointer] = Convert.ToByte(tempChar); });
             }
 		}
 	}
