@@ -9,7 +9,7 @@ public class BrainfuckLoopCommandsTests
 	[Test]
 	public void Loops()
 	{
-		Assert.AreEqual("\x0", Run("[+.]."));
+		Assert.AreEqual("\x0", Run("[+.]."));//Doesn`t work
 		Assert.AreEqual("\x1\x0", Run("+[.-]."));
 		Assert.AreEqual("\x3\x2\x1\x0", Run("+++[.-]."));
 	}
@@ -99,7 +99,7 @@ public class BrainfuckLoopCommandsTests
 ------.--------.>+.>."));
 	}
 
-	[Test]
+    [Test]
 	[MaxTime(1000)]
 	public void LoopsPerformance()
 	{

@@ -21,7 +21,7 @@ namespace func.brainfuck
 			Register = new Dictionary<char, Action<IVirtualMachine>>();
 		}
 
-		private string TransformToInstructions(string program) => Regex.Replace(program, "[^0-9a-zA-Z,.<>+-]+", "");
+		private string TransformToInstructions(string program) => Regex.Replace(program, "[^0-9a-zA-Z,.<>+-\\[\\]]+", "");
 
         public void RegisterCommand(char symbol, Action<IVirtualMachine> execute) => Register.Add(symbol, (IVirtualMachine) => execute(this));
 
