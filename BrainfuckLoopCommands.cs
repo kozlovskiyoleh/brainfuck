@@ -9,42 +9,37 @@ namespace func.brainfuck
 	{
 		public static void RegisterTo(IVirtualMachine vm)
 		{
-            int startIndex = 0;
-            int count = 0;
-            Stack<char> checkScopesParity = new Stack<char>();
-			
+            
+            Stack<int> iterationIndexes = new Stack<int>();
+            Stack<int> startIndexes = new Stack<int>(); 
+			Stack<char> validScopes = new Stack<char>();
             vm.RegisterCommand('[', b => 
-            { 
-                startIndex = vm.InstructionPointer; 
-                count = vm.MemoryPointer;
-                checkScopesParity.Push('[');
+            {
+                if (vm.Memory[vm.MemoryPointer] == 0)
+                {
+                    vm.InstructionPointer = vm.Instructions.IndexOf(']', vm.InstructionPointer);
+                    return;
+                }
+                startIndexes.Push(vm.InstructionPointer); 
+                iterationIndexes.Push(vm.MemoryPointer);
+                validScopes.Push('[');
             });
 
 			vm.RegisterCommand(']', b => 
             {
-                if (vm.Memory[count] != 0) vm.InstructionPointer = startIndex;
-                else if (checkScopesParity.Pop() != '[') throw new InvalidOperationException();
-                //else if (checkScopesParity.Count == 0) throw new InvalidOperationException();
+                int countIterations = vm.Memory[iterationIndexes.Peek()];
+                if (countIterations == 0)
+                {
+                    startIndexes.Pop();
+                    iterationIndexes.Pop();
+                    validScopes.Pop();
+                }
+                else
+                {
+                    vm.InstructionPointer = startIndexes.Peek();
+                }
+                
             });
 		}
-
-        public static bool VerifyLoop(string str)
-        {
-            Stack<char> stack = new Stack<char>();
-            foreach (char symbol in str)
-            {
-                switch (symbol)
-                {
-                    case '[':
-                        stack.Push(symbol);
-                        break;
-                    case ']':
-                        if (stack.Count == 0) return false;
-                        if (stack.Pop() != '[') return false;
-                        break;
-                }
-            }
-            return stack.Count == 0;
-        }
     }
 }
