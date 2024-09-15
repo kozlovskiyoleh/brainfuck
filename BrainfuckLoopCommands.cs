@@ -7,39 +7,58 @@ namespace func.brainfuck
 {
 	public class BrainfuckLoopCommands
 	{
-		public static void RegisterTo(IVirtualMachine vm)
-		{
-            
-            Stack<int> iterationIndexes = new Stack<int>();
-            Stack<int> startIndexes = new Stack<int>(); 
-			Stack<char> validScopes = new Stack<char>();
-            vm.RegisterCommand('[', b => 
+        public static void RegisterTo(IVirtualMachine vm)
+        {
+            List<Loop> nestedLoops = FindNestedLoops(vm.Instructions);
+            int loopsCounter = 0;
+
+            vm.RegisterCommand('[', b =>
             {
                 if (vm.Memory[vm.MemoryPointer] == 0)
                 {
-                    vm.InstructionPointer = vm.Instructions.IndexOf(']', vm.InstructionPointer);
-                    return;
+                    vm.InstructionPointer = nestedLoops[loopsCounter].EndLoop;
                 }
-                startIndexes.Push(vm.InstructionPointer); 
-                iterationIndexes.Push(vm.MemoryPointer);
-                validScopes.Push('[');
+                loopsCounter++;
             });
 
-			vm.RegisterCommand(']', b => 
+            vm.RegisterCommand(']', b =>
             {
-                int countIterations = vm.Memory[iterationIndexes.Peek()];
-                if (countIterations == 0)
+                if (vm.Memory[vm.MemoryPointer] != 0)
                 {
-                    startIndexes.Pop();
-                    iterationIndexes.Pop();
-                    validScopes.Pop();
+                    vm.InstructionPointer = nestedLoops[--loopsCounter].StartLoop;
                 }
-                else
-                {
-                    vm.InstructionPointer = startIndexes.Peek();
-                }
-                
             });
-		}
+        }
+
+        private static List<Loop> FindNestedLoops(string instructions)
+        {
+            int countOpeneScopes = 0;
+            List<Loop> tempList = new List<Loop>();
+            for(int i = 0; i < instructions.Length; i++)
+            {
+                if (instructions[i] == '[') 
+                {
+                    tempList.Add(new Loop(i-1));
+                    countOpeneScopes++;
+                }
+                if (instructions[i] == ']')
+                    tempList[--countOpeneScopes].AddEndLoopIndex(i);
+            }
+            return tempList;
+        }
+    }
+
+    public class Loop
+    {
+        public int StartLoop { get; private set; }
+        public int EndLoop { get; private set; }
+
+        public Loop(int startIndex, int endIndex = 0)
+        {
+            StartLoop = startIndex;
+            EndLoop = endIndex;
+        }
+
+        public void AddEndLoopIndex(int x) => EndLoop = x;
     }
 }

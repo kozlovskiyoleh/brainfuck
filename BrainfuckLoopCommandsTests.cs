@@ -29,7 +29,7 @@ public class BrainfuckLoopCommandsTests
 ------.--------.>+.>."));
 	}
 
-/*	[Test]
+	[Test]
 	public void BottlesOfBeer()
 	{
 		var text = Run(@"
@@ -84,7 +84,7 @@ public class BrainfuckLoopCommandsTests
 		Assert.IsTrue(text.Contains("1 Bottle of beer on the wall"));
 		Assert.IsTrue(text.Contains("0 Bottles of beer on the wall"));
 	}
-*/
+
 	[Test]
 	public void PairBracetsDictionaryIsNotStatic()
 	{
@@ -125,8 +125,7 @@ public class BrainfuckLoopCommandsTests
 	public void NestedLoopsPerformance2()
 	{
 		var s = new StringBuilder();
-		//var size = 30000;
-		var size = 3;
+		var size = 30000;
 		for (int i = 0; i < size; i++) s.Append("++>");
 		for (int i = 0; i < size; i++) s.Append("<[-");
 		for (int i = 0; i < size; i++) s.Append("]>");
