@@ -9,14 +9,14 @@ namespace func.brainfuck
 	{
         public static void RegisterTo(IVirtualMachine vm)
         {
-            List<Loop> nestedLoops = FindNestedLoops(vm.Instructions);
+            Dictionary<int, int> nestedLoops = FindNestedLoops(vm.Instructions);
             int loopsCounter = 0;
 
             vm.RegisterCommand('[', b =>
             {
                 if (vm.Memory[vm.MemoryPointer] == 0)
                 {
-                    vm.InstructionPointer = nestedLoops[loopsCounter].EndLoop;
+                    vm.InstructionPointer = nestedLoops[vm.InstructionPointer];
                 }
                 loopsCounter++;
             });
@@ -25,26 +25,33 @@ namespace func.brainfuck
             {
                 if (vm.Memory[vm.MemoryPointer] != 0)
                 {
-                    vm.InstructionPointer = nestedLoops[--loopsCounter].StartLoop;
+                    vm.InstructionPointer = nestedLoops[vm.InstructionPointer];
                 }
             });
         }
 
-        private static List<Loop> FindNestedLoops(string instructions)
+        private static Dictionary<int, int> FindNestedLoops(string instructions)
         {
             int countOpeneScopes = 0;
             List<Loop> tempList = new List<Loop>();
+            List<int> openScopesIndexes = new();
             for(int i = 0; i < instructions.Length; i++)
             {
                 if (instructions[i] == '[') 
                 {
-                    tempList.Add(new Loop(i-1));
+                    tempList.Add(new Loop(i));
                     countOpeneScopes++;
                 }
                 if (instructions[i] == ']')
                     tempList[--countOpeneScopes].AddEndLoopIndex(i);
             }
-            return tempList;
+            Dictionary<int, int> loopsScopesIndexes = new();
+            for(int i = 0; i < tempList.Count; i++)
+            {
+                loopsScopesIndexes.Add(tempList[i].StartLoop, tempList[i].EndLoop);
+                loopsScopesIndexes.Add(tempList[i].EndLoop, tempList[i].StartLoop);
+            }
+            return loopsScopesIndexes;
         }
     }
 
