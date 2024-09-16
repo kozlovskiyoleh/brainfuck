@@ -10,7 +10,7 @@ namespace func.brainfuck
         public static void RegisterTo(IVirtualMachine vm)
         {
             Dictionary<int, int> nestedLoops = FindNestedLoops(vm.Instructions);
-            int loopsCounter = 0;
+            Stack<int> unmatchedScopes = new Stack<int>();
 
             vm.RegisterCommand('[', b =>
             {
@@ -18,7 +18,7 @@ namespace func.brainfuck
                 {
                     vm.InstructionPointer = nestedLoops[vm.InstructionPointer];
                 }
-                loopsCounter++;
+                unmatchedScopes.Push(vm.InstructionPointer);
             });
 
             vm.RegisterCommand(']', b =>
@@ -32,24 +32,22 @@ namespace func.brainfuck
 
         private static Dictionary<int, int> FindNestedLoops(string instructions)
         {
-            int countOpeneScopes = 0;
-            List<Loop> tempList = new List<Loop>();
             List<int> openScopesIndexes = new();
+            List<int> closedScopesIndexes = new();
+
             for(int i = 0; i < instructions.Length; i++)
             {
                 if (instructions[i] == '[') 
-                {
-                    tempList.Add(new Loop(i));
-                    countOpeneScopes++;
-                }
+                    openScopesIndexes.Add(i);
                 if (instructions[i] == ']')
-                    tempList[--countOpeneScopes].AddEndLoopIndex(i);
+                    closedScopesIndexes.Add(i);
             }
+            closedScopesIndexes.Reverse();
             Dictionary<int, int> loopsScopesIndexes = new();
-            for(int i = 0; i < tempList.Count; i++)
+            for(int i = 0; i < openScopesIndexes.Count; i++)
             {
-                loopsScopesIndexes.Add(tempList[i].StartLoop, tempList[i].EndLoop);
-                loopsScopesIndexes.Add(tempList[i].EndLoop, tempList[i].StartLoop);
+                loopsScopesIndexes.Add(openScopesIndexes[i], closedScopesIndexes[i]);
+                loopsScopesIndexes.Add(closedScopesIndexes[i], openScopesIndexes[i]);
             }
             return loopsScopesIndexes;
         }
