@@ -7,63 +7,46 @@ namespace func.brainfuck
 {
 	public class BrainfuckLoopCommands
 	{
+        private static Dictionary<int, int> closedBracketsIndexes = new Dictionary<int, int>();
+        private static Dictionary<int, int> openedBracketsindexes = new Dictionary<int, int>();
+
         public static void RegisterTo(IVirtualMachine vm)
         {
-            Dictionary<int, int> nestedLoops = FindNestedLoops(vm.Instructions);
-            Stack<int> unmatchedScopes = new Stack<int>();
-
+            InitScopesIndexes(vm.Instructions);
             vm.RegisterCommand('[', b =>
             {
                 if (vm.Memory[vm.MemoryPointer] == 0)
                 {
-                    vm.InstructionPointer = nestedLoops[vm.InstructionPointer];
+                    vm.InstructionPointer = closedBracketsIndexes[vm.InstructionPointer];
                 }
-                unmatchedScopes.Push(vm.InstructionPointer);
             });
 
             vm.RegisterCommand(']', b =>
             {
                 if (vm.Memory[vm.MemoryPointer] != 0)
                 {
-                    vm.InstructionPointer = nestedLoops[vm.InstructionPointer];
+                    vm.InstructionPointer = openedBracketsindexes[vm.InstructionPointer];
                 }
             });
         }
 
-        private static Dictionary<int, int> FindNestedLoops(string instructions)
+        private static void InitScopesIndexes(string instructions)
         {
-            List<int> openScopesIndexes = new();
-            List<int> closedScopesIndexes = new();
-
+            Stack<int> stack = new Stack<int>();
             for(int i = 0; i < instructions.Length; i++)
             {
-                if (instructions[i] == '[') 
-                    openScopesIndexes.Add(i);
-                if (instructions[i] == ']')
-                    closedScopesIndexes.Add(i);
-            }
-            closedScopesIndexes.Reverse();
-            Dictionary<int, int> loopsScopesIndexes = new();
-            for(int i = 0; i < openScopesIndexes.Count; i++)
-            {
-                loopsScopesIndexes.Add(openScopesIndexes[i], closedScopesIndexes[i]);
-                loopsScopesIndexes.Add(closedScopesIndexes[i], openScopesIndexes[i]);
-            }
-            return loopsScopesIndexes;
+                char bracket = instructions[i];
+                switch (bracket)
+                {
+                    case '[':
+                        stack.Push(i);
+                        break;
+                    case ']':
+                        openedBracketsindexes[i] = stack.Peek();
+                        closedBracketsIndexes[stack.Pop()] = i;
+                        break;
+                }
+            }           
         }
-    }
-
-    public class Loop
-    {
-        public int StartLoop { get; private set; }
-        public int EndLoop { get; private set; }
-
-        public Loop(int startIndex, int endIndex = 0)
-        {
-            StartLoop = startIndex;
-            EndLoop = endIndex;
-        }
-
-        public void AddEndLoopIndex(int x) => EndLoop = x;
     }
 }
